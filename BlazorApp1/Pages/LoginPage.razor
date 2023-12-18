@@ -1,0 +1,40 @@
+﻿@page "/login"
+@inject ILocalStorageService localStorage
+
+
+<h3>LoginPage</h3>
+
+<h5>@message</h5>
+
+<div class="mb-2">
+    <label class="form-label">Username</label>
+    <input class="form-control" @bind=user/>
+</div>
+<div class="mb-2">
+    <label class="form-label">Password</label>
+    <input class="form-control" type="password" @bind=pass />
+</div>
+<button class="btn btn-primary" @onclick=Login>Login</button>
+
+@code {
+    string user, pass;
+    string token;
+    string message;
+
+    async Task Login()
+    {
+        if(string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass))
+        {
+            return;
+        }
+        HttpClient httpClient = new HttpClient();
+        HttpResponseMessage respond = await httpClient.GetAsync($"http://localhost:5229/login?user={user}&password={pass}");
+        if (!respond.IsSuccessStatusCode)
+        {
+            message = "Login Error !!!";
+            return;
+        }
+        token = await respond.Content.ReadAsStringAsync();
+        await localStorage.SetItemAsStringAsync("token", token);
+    }
+}
